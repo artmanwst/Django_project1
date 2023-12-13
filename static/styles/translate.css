@@ -1,14 +1,21 @@
-.skiptranslate, .goog-te-balloon-frame{display: none !important;}
-.goog-text-highlight { background: none !important; box-shadow: none !important;}
+.skiptranslate, .goog-te-balloon-frame {
+    display: none !important;
+}
 
-body{
-    top:0 !important;
+.goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+body {
+    top: 0 !important;
     min-height: 100%;
 }
+
 .goog-te-banner-frame {
-    display: none;
+    display: none !important;
     height: 0 !important;
-    visibility: hidden
+    visibility: hidden;
 }
 
 #google_translate_element {

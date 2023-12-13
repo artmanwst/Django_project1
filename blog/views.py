@@ -9,6 +9,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from django.views.generic import View
+from django.shortcuts import render, get_object_or_404
+
 
 
 class PostSearchResultsView(View):
@@ -18,6 +20,13 @@ class PostSearchResultsView(View):
         query = request.GET.get('q')
         object_list = Post.objects.filter(title__icontains=query)
         return render(request, self.template_name, {'object_list': object_list, 'query': query})
+
+
+def get_post_by_title(request, title):
+    post = get_object_or_404(Post, title=title)
+    return render(request, 'post_detail.html', {'post': post})
+
+
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -30,8 +39,7 @@ class CustomAuthenticationForm(AuthenticationForm):
 class UserProfileView(DetailView):
     model = User
     template_name = 'user_profile.html'
-    context_object_name = 'user_data'  # Это атрибут позволяет задать имя переменной контекста для объекта пользователя
-
+    context_object_name = 'user_data'  
     def get_object(self):
         return self.request.user
 

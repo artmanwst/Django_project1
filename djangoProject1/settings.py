@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-uw4pa&iiyf7gmpc9xti(y6u-0#9+)w6)4r75+0me52+l@ktreb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost','127.0.0.1']
 
 
 # Application definition
@@ -81,9 +81,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'django',
+        "CLIENT": {
+            'username': 'root',
+            'password': 'root',
+            'host': 'mongodb://db:27017'
+        }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -118,10 +122,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -129,3 +134,7 @@ STATICFILES_DIRS = [
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'

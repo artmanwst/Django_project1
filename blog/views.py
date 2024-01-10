@@ -2,14 +2,20 @@ from django.views.generic import ListView, TemplateView
 from .models import Post
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render
-from .forms import WriterForm
-from django.views.generic import DetailView
+from .forms import WriterForm, ProfileForm
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from django.views.generic import View
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Profile
+from django.urls import reverse_lazy
+from django.views.generic import ListView
+from .models import Post
+from django.views.generic import DetailView
 
 
 
@@ -24,7 +30,9 @@ class PostSearchResultsView(View):
 
 def get_post_by_title(request, title):
     post = get_object_or_404(Post, title=title)
-    return render(request, 'post_detail.html', {'post': post})
+    user_authenticated = request.user.is_authenticated
+    return render(request, 'post_detail.html', {'post': post,'user_authenticated':user_authenticated  })
+
 
 
 
@@ -36,47 +44,60 @@ class CustomAuthenticationForm(AuthenticationForm):
         self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
 
 
-class UserProfileView(DetailView):
-    model = User
-    template_name = 'user_profile.html'
-    context_object_name = 'user_data'  
-    def get_object(self):
-        return self.request.user
-
 
 def redirect_to_user_profile(request):
-    # После успешной регистрации перенаправляем на страницу профиля пользователя
     return redirect('user_profile')
+
+from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView
+from .models import Profile
+from django.views.generic import UpdateView
+
+class UserProfileView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = 'profile.html'
+    success_url = '/user_profile/'  # Укажите URL, куда перейти после успешного обновления профиля
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+
 
 
 def registration(request):
+    print(request.method)
     if request.method =='POST':
         form = WriterForm(request.POST)
         if form.is_valid():
             form.save()
-            return render(request,'user_profile.html')
+            return render(request, 'profile.html')
     else:
         form = UserCreationForm()
     return render(request, 'your_template.html', {'form': form})
 
 
 def login_in(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return redirect('user_profile')
-    pass
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            request.session['user_authenticated'] = True
+            return render(request, 'home.html')
+            # return redirect('profile')
+    
+    return render(request, 'home.html', {'object_list': Post.objects.all()})
 
 
-from django.views.generic import ListView
-from .models import Post
 
 
 class BlogListView(ListView):
     model = Post
     template_name = 'home.html'
+    paginate_by = 3
     context_object_name = 'object_list'
 
     def get_queryset(self):
@@ -90,11 +111,17 @@ class BlogListView(ListView):
         context = super().get_context_data(**kwargs)
         context['form'] = WriterForm()
         context['login_form'] = CustomAuthenticationForm()
+        context['user_authenticated'] = self.request.user.is_authenticated
         return context
 
 
 class AboutPageView(TemplateView):
     template_name = 'about.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_authenticated'] = self.request.user.is_authenticated
+        return context
 
 
 class ImputPageView(TemplateView):

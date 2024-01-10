@@ -95,13 +95,21 @@
                         <input class="form-control me-2" type="search" placeholder="Поиск" aria-label="Search" name="q">
                         <button class="btn btn-primary" type="submit">Искать</button>
                     </form>
-                    <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal"
-                            data-bs-target="#registrationModal">
-                        Регистрация
-                    </button>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
-                        Вход
-                    </button>
+                    {% if not user_authenticated %}
+                        <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal"
+                                data-bs-target="#registrationModal">
+                            Регистрация
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            Вход
+                        </button>
+                    {% else %}
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Выход</button>
+                        </form>
+                        <a href="{% url 'user_profile' %}" class="btn btn-primary me-3">Личный кабинет</a>
+                    {% endif %}
                 </div>
             </div>
         </nav>
